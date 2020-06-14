@@ -9,7 +9,8 @@ STARTUP_S = mdk/gcc_startup_nrf52.S
 
 # directory that has nrfx_glue.h, nrfx_config.h, and nrfx_log.h for your project
 CONFIG_DIR = ../config
-# director that has the cmsis headers
+CONFIGS = $(CONFIG_DIR)/nrfx_config.h $(CONFIG_DIR)/nrfx_log.h $(CONFIG_DIR)/nrfx_glue.h
+# directory that has the cmsis headers
 CMSIS_DIR = ../toolchain/cmsis/include
 
 SRCFILES = $(wildcard drivers/src/*.c) soc/nrfx_atomic.c $(SYSTEM_C)
@@ -29,14 +30,14 @@ INCL_DIRS = -I$(CONFIG_DIR) \
 
 CFLAGS = -std=c99 -ggdb $(ARCH_CPU) -D$(NRF_CPU)
 
-%.o: %.c
+%.o: %.c $(CONFIGS)
 	$(CC) $(CFLAGS) $(INCL_DIRS) -o $@ -c $<
 
 startup.o: $(STARTUP_S)
 	$(CPP) $(STARTUP_S) | $(GAS) $(ARCH_CPU) -o startup.o
 
-libnrf52832.a: $(OBJS) startup.o
-	$(AR) rcs "$@" $(OBJS) startup.o
+libnrf52832.a: startup.o $(OBJS) $(CONFIGS)
+	$(AR) rcs "$@" $(OBJS)
 
 clean:
 	find -name "*.o" | xargs rm
